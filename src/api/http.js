@@ -27,7 +27,6 @@ export default {
     },
     // delete请求
     requestDelete(url, params = {}) {
-
         return new Promise((resolve, reject) => {
             axios.delete(url, params).then(res => {
                 resolve(res.data)
@@ -38,7 +37,6 @@ export default {
     },
     // put请求
     requestPut(url, params = {}) {
-        this.setUpCookie()
         return new Promise((resolve, reject) => {
             axios.put(url, params).then(res => {
                 resolve(res.data)

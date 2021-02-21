@@ -1,6 +1,9 @@
 <template>
   <div>
-    <div class="content-header-box" v-text="$route.name"></div>
+    <div class="content-header-box" >
+      <el-tag type="info" effect="dark" v-text="$route.name">
+      </el-tag>
+    </div>
     <div class="content-container-box">
       <router-view></router-view>
     </div>
