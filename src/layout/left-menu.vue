@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-menu
-        default-active="0"
+        :default-active="$route.path"
         class="el-menu-vertical"
         background-color="#545c64"
         text-color="#fff"
@@ -12,20 +12,20 @@
       <template v-for="(item,index) in menuList">
 
         <router-link :to="item.path" v-if="!item.children && !item.hidden" :key="index">
-          <el-menu-item :index="index.toString()">
+          <el-menu-item :index="item.path">
             <i :class="item.icon"></i>
             <span slot="title">{{ item.name }}</span>
           </el-menu-item>
         </router-link>
 
-        <el-submenu v-if="item.children && !item.hidden" :key="index" :index="index.toString()">
+        <el-submenu v-if="item.children && !item.hidden" :key="index" :index="item.path">
           <template slot="title">
             <i :class="item.icon"></i>
             <span>{{ item.name }}</span>
           </template>
 
           <router-link :to="item.path+'/'+subItem.path" v-for="(subItem,subIndex) in item.children" :key="subIndex">
-            <el-menu-item :index="index+'-'+subIndex" v-if="!subItem.hidden">
+            <el-menu-item :index="item.path+'/'+subItem.path" v-if="!subItem.hidden">
               <i :class="subItem.icon"></i>
               <span slot="title">{{ subItem.name }}</span>
             </el-menu-item>

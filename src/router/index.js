@@ -27,7 +27,6 @@ const  webSizeInfo = () =>import("@/page/settings/web-size-info")
 const  email = () =>import("@/page/user/email")
 const  info = () =>import("@/page/user/info")
 const  list = () =>import("@/page/user/list")
-const  resetPassword = () =>import("@/page/user/reset-password")
 
 /*布局*/
 const  baseView = () =>import("@/layout/base-view")
@@ -97,13 +96,6 @@ export const routes = [
                         icon: 'el-icon-user-solid',
                         hidden: false,
                         component: list
-                    },
-                    {
-                        path: 'reset-password',
-                        name: '密码重置',
-                        icon: 'el-icon-key',
-                        hidden: false,
-                        component: resetPassword
                     },
                     {
                         path: 'email',

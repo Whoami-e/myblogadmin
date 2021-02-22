@@ -219,6 +219,18 @@ export default {
       this.editDialogShow = true;
     },
     postCategory() {
+      if (this.category.name === '') {
+        this.toastE('请输入分类名称');
+        return;
+      }
+      if (this.category.description === '') {
+        this.toastE('请输入分类描述');
+        return;
+      }
+      if (this.category.pinyin === '') {
+        this.toastE('请输入分类拼音');
+        return;
+      }
       if (this.category.id === '') {
         api.addCategory(this.category).then(result => {
           if (result.code === api.SUCCESS_CODE) {
@@ -272,11 +284,10 @@ export default {
 
 .category-list-box .table {
   margin-top: 10px;
-  border: solid 1px #E4DFDF;
   background-color: #E9EEF3;
 }
 
-.el-table th, .el-table tr, .el-table td {
+.el-table tr {
   background-color: #E9EEF3;
   border: solid 1px #E4DFDF;
 }
@@ -291,5 +302,8 @@ export default {
 
 .el-dialog__title {
   color: red;
+}
+.category-edit-box .el-form-item {
+  margin-bottom: 10px;
 }
 </style>

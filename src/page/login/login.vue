@@ -37,6 +37,8 @@
 </template>
 <script>
 import {doLogin} from "@/api/api";
+import {hex_md5} from "@/utils/md5";
+
 export default {
   data() {
     let validateUserName = (rule, value, callback) => {
@@ -157,6 +159,9 @@ export default {
   }
   .login-center-box .el-input {
     width: 200px;
+  }
+  .login-center-box .el-form-item {
+    margin-bottom: 10px;
   }
   .login-center-box {
     padding: 40px;

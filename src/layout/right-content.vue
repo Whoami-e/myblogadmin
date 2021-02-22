@@ -23,5 +23,6 @@
    margin-top: -15px;
    line-height: 46px;
    border-bottom: solid 1px #E4DFDF;
+   font-weight: 600;
  }
 </style>
