@@ -22,10 +22,10 @@ const  loopManage = () =>import("@/page/operation/loop")
 /*设置*/
 const  friendLink = () =>import("@/page/settings/friend-link")
 const  webSizeInfo = () =>import("@/page/settings/web-size-info")
+const  email = () =>import("@/page/settings/email")
+const  info = () =>import("@/page/settings/info")
 
 /*用户*/
-const  email = () =>import("@/page/user/email")
-const  info = () =>import("@/page/user/info")
 const  list = () =>import("@/page/user/list")
 
 /*布局*/
@@ -96,20 +96,6 @@ export const routes = [
                         icon: 'el-icon-user-solid',
                         hidden: false,
                         component: list
-                    },
-                    {
-                        path: 'email',
-                        name: '邮箱设置',
-                        icon: 'el-icon-message',
-                        hidden: false,
-                        component: email
-                    },
-                    {
-                        path: 'info',
-                        name: '用户信息',
-                        icon: 'el-icon-info',
-                        hidden: false,
-                        component: info
                     }
                 ]
             },
@@ -143,6 +129,20 @@ export const routes = [
                 hidden: false,
                 component: rightView,
                 children: [
+                    {
+                        path: 'email',
+                        name: '邮箱设置',
+                        icon: 'el-icon-message',
+                        hidden: false,
+                        component: email
+                    },
+                    {
+                        path: 'info',
+                        name: '用户信息',
+                        icon: 'el-icon-info',
+                        hidden: false,
+                        component: info
+                    },
                     {
                         path: 'web-size-info',
                         name: '网站信息',

@@ -1,5 +1,4 @@
 import http from './http'
-import {hex_md5} from "@/utils/md5";
 
 export const SUCCESS_CODE =20000;
 
@@ -10,7 +9,6 @@ export const checkToken = () => {
 
 //登录
 export const doLogin = (verifyCode,captcha_key,User) => {
-    User.password = hex_md5(User.password);
     return http.requestPost('/user/login/' + verifyCode+ '/' + captcha_key + '?from=p_',User);
 }
 
@@ -34,6 +32,11 @@ export const updateCategory = (categoryId, category) => {
     return http.requestPut('/admin/category/' +categoryId,category);
 }
 
+//获取轮播图列表
+export const listLoop = () => {
+    return http.requestGet('/admin/looper/list');
+}
+
 //获取用户列表
 export const listUsers = (pageNum,pageSize) => {
     return http.requestGet('/user/list?page=' + pageNum + '&size=' + pageSize);
@@ -52,4 +55,14 @@ export const deleteUserById = (userId) => {
 //重置密码（管理员）
 export const resetPassword = (userId,password) => {
     return http.requestPut('/user/reset-password/' + userId + '?password=' + password);
+}
+
+//获取邮箱验证码
+export const getVerifyCode = (newEmail, type) => {
+    return http.requestGet('/user/email_code?email=' +newEmail+ '&type=' +type);
+}
+
+//修改邮箱地址
+export const updateEmailAddress = (oldEmailAdr,newEmailAdr,verifyCode) => {
+    return http.requestPut('/user/email/?oldEmail=' +oldEmailAdr+ '&newEmail=' +newEmailAdr+ '&verify_code=' +verifyCode);
 }

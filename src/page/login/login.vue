@@ -12,7 +12,7 @@
       <div class="center login-center-box">
         <el-row :gutter="20">
           <el-col :span="12">
-            <el-form :model="User" :rules="rules" ref="User" label-width="100px">
+            <el-form :model="User" :rules="rules" ref="User" label-width="100px" class="demo-ruleForm">
               <el-form-item label="账号" prop="userName">
                 <el-input type="text" v-model="User.userName" placeholder="用户名"></el-input>
               </el-form-item>
@@ -37,7 +37,6 @@
 </template>
 <script>
 import {doLogin} from "@/api/api";
-import {hex_md5} from "@/utils/md5";
 
 export default {
   data() {
@@ -160,9 +159,9 @@ export default {
   .login-center-box .el-input {
     width: 200px;
   }
-  .login-center-box .el-form-item {
-    margin-bottom: 10px;
-  }
+  /*.login-center-box .el-form-item {*/
+  /*  margin-bottom: 20px;*/
+  /*}*/
   .login-center-box {
     padding: 40px;
     border-radius: 4px;
