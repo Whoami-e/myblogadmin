@@ -1,6 +1,7 @@
 import http from './http'
 
 export const SUCCESS_CODE =20000;
+export const FAILED_CODE =40000;
 
 //解析token
 export const checkToken = () => {
@@ -37,6 +38,21 @@ export const listLoop = () => {
     return http.requestGet('/admin/looper/list');
 }
 
+//添加轮播图
+export const postLoop = (Loop) => {
+    return http.requestPost('/admin/looper',Loop);
+}
+
+//删除轮播图
+export const deleteLoop = (loopId) => {
+    return http.requestDelete('/admin/looper/' + loopId);
+}
+
+//更新轮播图
+export const updateLoop = (loopId,loop) => {
+    return http.requestPut('/admin/looper/' + loopId, loop);
+}
+
 //获取用户列表
 export const listUsers = (pageNum,pageSize) => {
     return http.requestGet('/user/list?page=' + pageNum + '&size=' + pageSize);
@@ -65,4 +81,14 @@ export const getVerifyCode = (newEmail, type) => {
 //修改邮箱地址
 export const updateEmailAddress = (oldEmailAdr,newEmailAdr,verifyCode) => {
     return http.requestPut('/user/email/?oldEmail=' +oldEmailAdr+ '&newEmail=' +newEmailAdr+ '&verify_code=' +verifyCode);
+}
+
+//检查用户名是否存在
+export const checkUserName = (userName) => {
+    return http.requestGet('/user/user_name?userName=' + userName);
+}
+
+//更新管理员信息
+export const updateAdminInfo = (user,userId) => {
+    return http.requestPut('/user/user_info/' + userId, user);
 }

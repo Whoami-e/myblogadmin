@@ -21,6 +21,11 @@
           <el-input type="textarea" resize="none" v-model="userInfo.sign"></el-input>
         </el-form-item>
         <el-form-item>
+          <div class="warning">
+            *注意：修改用户信息后一定要按下面的按钮，才能修改成功，否则修改无效！
+          </div>
+        </el-form-item>
+        <el-form-item>
           <el-button type="primary" @click="updateAdminInfo">修改账户信息</el-button>
         </el-form-item>
       </el-form>
@@ -48,35 +53,67 @@ export default {
   },
   data() {
     return {
+      lastUserName: '',
       showAvatar: false,
       userInfo: null
     }
   },
   methods: {
     showAvatarDialog() {
-      this.showAvatar = !this.showAvatar;
+      this.showAvatar = true;
     },
-    cropUploadSuccess(jsonData, field) {
-      console.log('jsonData ==> ' + jsonData);
-      console.log('field ==> ' + field);
+    cropUploadSuccess(response) {
+      if (response.code === api.SUCCESS_CODE) {
+        this.$message.success(response.message);
+        this.userInfo.avatar = 'http://localhost:8081/portal/image/' + response.data.path;
+      } else {
+        this.$message.error(response.message);
+      }
     },
-    cropUploadFail(status, field) {
-      console.log('status ==> ' + status);
-      console.log('field ==> ' + field);
+    cropUploadFail() {
+      this.$message.error('图片上传失败！');
     },
     toUpdateEmailAdrPage() {
       this.$router.push({
         path: '/settings/email'
       })
     },
-
     updateAdminInfo() {
+      if (this.userInfo.userName === '') {
+        this.$message.error('请输入用户名！');
+        return;
+      }
+      if (this.lastUserName === this.userInfo.userName) {
+        this.doUpdateInfo();
+      } else {
+        api.checkUserName(this.userInfo.userName).then(result => {
+          if (result.code === api.FAILED_CODE) {
+            this.doUpdateInfo();
+          } else {
+            this.$message.error(result.message);
+          }
+        });
+      }
 
+    },
+    doUpdateInfo() {
+      if (this.userInfo.avatar === '') {
+        this.$message.error('请上传头像！');
+      }
+      api.updateAdminInfo(this.userInfo,this.userInfo.id).then(result => {
+        if (result.code === api.SUCCESS_CODE) {
+          this.getAdminInfo();
+          this.$message.success(result.message);
+        } else {
+          this.$message.error(result.message);
+        }
+      });
     },
     getAdminInfo() {
       api.checkToken().then(result => {
         if (result.code === api.SUCCESS_CODE) {
           this.userInfo = result.data;
+          this.lastUserName = this.userInfo.userName;
         } else {
           this.$message.error(result.message);
         }
@@ -89,6 +126,10 @@ export default {
 }
 </script>
 <style>
+.warning {
+  color: red;
+  font-weight: 600;
+}
 .user-avatar-container {
   width: 40px;
   cursor: pointer;
