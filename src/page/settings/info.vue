@@ -7,7 +7,7 @@
         </el-form-item>
         <el-form-item label="用户头像" class="user-info-avatar">
           <div class="user-avatar-container" @click="showAvatarDialog">
-            <el-avatar :src="userInfo.avatar"></el-avatar>
+            <el-avatar :src="blog_constants.baseUrl +userInfo.avatar"></el-avatar>
           </div>
         </el-form-item>
         <el-form-item label="用户名">
@@ -22,11 +22,11 @@
         </el-form-item>
         <el-form-item>
           <div class="warning">
-            *注意：修改用户信息后一定要按下面的按钮，才能修改成功，否则修改无效！
+            *注意：修改用户信息后一定要按下面的按钮！
           </div>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="updateAdminInfo">修改账户信息</el-button>
+          <el-button type="primary" size="medium" @click="updateAdminInfo">更新账户信息</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -38,7 +38,7 @@
           v-model="showAvatar"
           :width="300"
           :height="300"
-          url="/admin/image"
+          url="/admin/image/avatar"
           img-format="png"></avatar-upload>
     </div>
   </div>
@@ -65,7 +65,7 @@ export default {
     cropUploadSuccess(response) {
       if (response.code === api.SUCCESS_CODE) {
         this.$message.success(response.message);
-        this.userInfo.avatar = 'http://localhost:8081/portal/image/' + response.data.path;
+        this.userInfo.avatar = '/portal/image/' + response.data.path;
       } else {
         this.$message.error(response.message);
       }
@@ -128,7 +128,7 @@ export default {
 <style>
 .warning {
   color: red;
-  font-weight: 600;
+  font-weight: 400;
 }
 .user-avatar-container {
   width: 40px;

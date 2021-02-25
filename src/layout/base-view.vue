@@ -29,6 +29,7 @@ export default {
 
     if (leftMenuBoxHeight) {
       leftMenuBoxHeight.style.height = window.innerHeight + 'px';
+      console.log(window.innerHeight)
     }
   }
 }

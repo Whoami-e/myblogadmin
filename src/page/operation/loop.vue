@@ -8,6 +8,7 @@
           v-loading="loading"
           :data="listLoops"
           border
+          max-height="576"
           style="width: 100%" class="table">
         <el-table-column
             fixed
@@ -27,7 +28,7 @@
             label="轮播图"
             width="220">
           <template slot-scope="scope">
-            <el-image class="image" :src="scope.row.imageUrl" width="190px" height="50px">
+            <el-image class="image" :src="blog_constants.baseUrl + scope.row.imageUrl" width="190px" height="50px">
               <div slot="error" class="image-slot">
                 <i class="el-icon-picture-outline" style="text-align: center">图片加载失败...</i>
               </div>
@@ -105,11 +106,11 @@
               <el-upload
                   drag
                   class="avatar-uploader"
-                  action="/admin/image"
+                  action="/admin/image/loop"
                   :show-file-list="false"
                   :on-success="uploadSuccess"
                   :before-upload="beforeUpload">
-                <el-image fit="cover" v-if="loop.imageUrl!==''" :src="loop.imageUrl"
+                <el-image fit="cover" v-if="loop.imageUrl!==''" :src="blog_constants.baseUrl +loop.imageUrl"
                           class="avatar"></el-image>
                 <i v-else class="el-icon-plus avatar-uploader-icon"></i>
               </el-upload>
@@ -254,7 +255,7 @@ import * as dateUtils from "@/utils/date";
       uploadSuccess(response) {
         console.log(response)
         if (response.code === api.SUCCESS_CODE) {
-          this.loop.imageUrl = 'http://localhost:8081/portal/image/' + response.data.path;
+          this.loop.imageUrl = '/portal/image/' + response.data.path;
           this.$message.success(response.message);
         } else {
           this.$message.error(response.message);
@@ -274,10 +275,10 @@ import * as dateUtils from "@/utils/date";
         const isLt2M = file.size / 1024 / 1024 < 2;
 
         if (!isTrue) {
-          this.$message.error('上传头像图片只能是 JPG/PNG/GIF 格式!');
+          this.$message.error('上传图片只能是 JPG/PNG/GIF 格式!');
         }
         if (!isLt2M) {
-          this.$message.error('上传头像图片大小不能超过 2MB!');
+          this.$message.error('上传图片大小不能超过 2MB!');
         }
         return isTrue && isLt2M;
       },

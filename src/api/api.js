@@ -92,3 +92,43 @@ export const checkUserName = (userName) => {
 export const updateAdminInfo = (user,userId) => {
     return http.requestPut('/user/user_info/' + userId, user);
 }
+
+//获取SEO信息
+export const getSeoInfo = () => {
+    return http.requestGet('/admin/web_size_info/seo');
+}
+
+//获取网站标题
+export const getWebSizeTitle = () => {
+    return http.requestGet('/admin/web_size_info/title');
+}
+
+//更新网站标题
+export const updateWebSizeTitle = (title) => {
+    return http.requestPut('/admin/web_size_info/title?title=' + title);
+}
+
+//更新SEO信息
+export const updateSeoInfo = (keyWords,description) => {
+    return http.requestPut('/admin/web_size_info/seo?keywords=' + keyWords + '&description=' + description);
+}
+
+//获取友情链接列表
+export const listFriendLink = () => {
+    return http.requestGet('/admin/friend_link/list');
+}
+
+//添加友情链接
+export const postFriendLink = (friend_link) => {
+    return http.requestPost('/admin/friend_link',friend_link);
+}
+
+//更新友情链接
+export const updateFriendLink = (friendLinkId,friendLink) => {
+    return http.requestPut('/admin/friend_link/' + friendLinkId, friendLink);
+}
+
+//删除友情链接
+export const deleteFriendLink = (friendLinkId) => {
+    return http.requestDelete('/admin/friend_link/' +friendLinkId);
+}
