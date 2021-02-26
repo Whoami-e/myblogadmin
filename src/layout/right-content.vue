@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="content-header-box" >
-      <el-tag type="info" effect="dark" v-text="$route.name">
+      <el-tag type="info" effect="dark" v-text="$route.name" style="font-size: 15px;">
       </el-tag>
     </div>
     <div class="content-container-box">
@@ -17,12 +17,12 @@
 </script>
 <style>
  .content-container-box {
-   padding: 10px;
+   /*padding: 10px;*/
  }
  .content-header-box {
+   padding-top: 5px;
    margin-top: -15px;
-   line-height: 46px;
+   padding-bottom: 15px;
    border-bottom: solid 1px #E4DFDF;
-   font-weight: 600;
  }
 </style>

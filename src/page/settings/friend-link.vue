@@ -9,8 +9,7 @@
           :data="links"
           border
           style="width: 100%"
-          class="table"
-          max-height="576">
+          class="table">
         <el-table-column
             fixed
             prop="id"

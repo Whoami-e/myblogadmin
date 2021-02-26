@@ -132,3 +132,8 @@ export const updateFriendLink = (friendLinkId,friendLink) => {
 export const deleteFriendLink = (friendLinkId) => {
     return http.requestDelete('/admin/friend_link/' +friendLinkId);
 }
+
+//获取图片列表
+export const listImages = (page,size) => {
+    return http.requestGet('/admin/image/list/' +page+ '/' +size);
+}

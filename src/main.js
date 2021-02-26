@@ -7,6 +7,8 @@ import leftMenu from './layout/left-menu'
 import topHeader from './layout/top-header'
 import {checkToken} from "@/api/api";
 import constants from "@/utils/constants";
+import mavonEditor from 'mavon-editor'
+import 'mavon-editor/dist/css/index.css'
 
 Vue.config.productionTip = false
 Vue.prototype.blog_constants = constants;
@@ -14,6 +16,7 @@ Vue.prototype.blog_constants = constants;
 Vue.component('leftMenu',leftMenu);
 Vue.component('topHeader',topHeader);
 Vue.use(ElementUI);
+Vue.use(mavonEditor)
 
 router.beforeEach((to, from, next) => {
   if (to.path === '/login') {

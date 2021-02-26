@@ -1,7 +1,7 @@
 <template>
   <div>
 
-    <el-container>
+    <el-container class="main-container">
       <el-aside id="left-menu-list-box" width="200px">
         <topHeader id="top"></topHeader>
         <leftMenu></leftMenu>
@@ -11,9 +11,7 @@
         <el-header id="admin-header-box">
         </el-header>
         <el-main>
-          <div class="content">
             <router-view></router-view>
-          </div>
         </el-main>
       </el-container>
     </el-container>
@@ -24,17 +22,19 @@
 export default {
   mounted() {
 
-    //动态设置侧边菜单的高度
-    let leftMenuBoxHeight = document.getElementById('left-menu-list-box');
-
-    if (leftMenuBoxHeight) {
-      leftMenuBoxHeight.style.height = window.innerHeight + 'px';
-      console.log(window.innerHeight)
-    }
   }
 }
 </script>
 <style>
+/*#left-menu-list-box {*/
+/*  z-index: 2000;*/
+/*}*/
+.main-container {
+  position: absolute;
+  top: 0px;
+  bottom: 0px;
+  width: 100%;
+}
   .el-header {
     background-color: #545c64;
     color: #ffff;

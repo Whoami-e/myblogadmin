@@ -8,7 +8,6 @@
           v-loading="loading"
           :data="listLoops"
           border
-          max-height="576"
           style="width: 100%" class="table">
         <el-table-column
             fixed
