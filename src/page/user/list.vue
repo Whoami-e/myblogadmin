@@ -86,7 +86,7 @@
           @current-change="onPageChange"
           :current-page="pageNavigation.currentPage"
           :page-size="pageNavigation.pageSize"
-          :page-sizes="[10, 20, 30, 50]"
+          :page-sizes="[20, 40, 60, 80]"
           layout="total, sizes, prev, pager, next, jumper"
           :total="pageNavigation.totalCount">
       </el-pagination>

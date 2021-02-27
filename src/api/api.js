@@ -134,6 +134,15 @@ export const deleteFriendLink = (friendLinkId) => {
 }
 
 //获取图片列表
-export const listImages = (page,size) => {
-    return http.requestGet('/admin/image/list/' +page+ '/' +size);
+export const listImages = (page,size,from) => {
+    return http.requestGet('/admin/image/list/' +page+ '/' +size+ '?original=' +from);
+}
+
+//发表文章
+export const postArticle = (article) => {
+    return http.requestPost('/admin/article', article);
+}
+//保存草稿
+export const saveArticle = (article) => {
+    return http.requestPost('/admin/article', article);
 }

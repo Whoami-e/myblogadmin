@@ -1,5 +1,5 @@
 <template>
-  <div class="article-post-box">
+  <div class="article-post-box" >
     <!--标题-->
     <div class="article-title-part">
       <el-input maxlength="64" minlength="8" style="height: 50px;font-size: 20px"
@@ -11,11 +11,12 @@
     </div>
     <!--内容编辑部分-->
     <div class="article-post-part">
-      <mavon-editor v-model="article.content"/>
+      <mavon-editor ref="mdEditor" v-model="article.content" @onImageClick="onEditorImageClick"></mavon-editor>
     </div>
     <!--文章设置：分类，封面，标签-->
     <div class="article-post-settings-part shadow">
-      <el-form class="settings-form" ref="article" :rules="rules" :model="article" label-width="80px" style="background-color: #ffffff">
+      <el-form class="settings-form" ref="article" :rules="rules" :model="article" label-width="80px"
+               style="background-color: #ffffff">
         <el-form-item label="文章分类" required>
           <el-select v-model="article.categoryId" placeholder="请选择文章分类">
             <el-option
@@ -37,7 +38,7 @@
         <el-form-item label="文章封面" required prop="cover">
           <div class="article-cover-selector" @click="showImageSelector">
             <i class="el-icon-plus" v-if="article.cover===''"></i>
-            <el-image v-else :src="blog_constants.baseURL + article.cover"></el-image>
+            <el-image v-else :src="blog_constants.baseUrl + '/portal/image/' +article.cover"></el-image>
           </div>
         </el-form-item>
         <el-form-item label="文章标签" required>
@@ -47,7 +48,7 @@
               closable
               :disable-transitions="false"
               @close="deleteLabel(tag)">
-            {{tag}}
+            {{ tag }}
           </el-tag>
           <el-input
               class="input-new-tag"
@@ -65,22 +66,48 @@
     <!--发布、草稿、预览的按钮-->
     <div class="article-post-action-bar">
       <div class="action-btn-container">
-        <el-button plain>全屏预览</el-button>
-        <el-button plain>保存草稿</el-button>
-        <el-button type="primary">发表文章</el-button>
+        <el-button plain @click="preView">全屏预览</el-button>
+        <el-button plain @click="saveArticle">保存草稿</el-button>
+        <el-button v-if="loading === false" @click="commitArticle" type="primary">发表文章</el-button>
+        <el-button v-else @click="commitArticle" type="primary" disabled>发表文章</el-button>
       </div>
     </div>
     <div class="article-post-dialog-box">
       <el-dialog
           title="图片选择"
           :visible.sync="isImageSelectorShow"
-          width="790px">
+          width="800px">
         <div class="image-selector-box">
           <div class="image-action-bar">
-            <el-button type="primary" size="medium">上传图片</el-button>
+            <el-upload
+                drag
+                class="image-selector-uploader"
+                action="/admin/image/article"
+                :show-file-list="false"
+                :on-success="uploadSuccess"
+                :on-error="uploadError"
+                :before-upload="beforeUpload"
+                accept="image/*">
+              <el-button type="primary" size="medium">上传图片</el-button>
+            </el-upload>
           </div>
-          <div class="image-selector-list clearfix">
-            <el-image v-for="(item,index) in images" :key="index" :src="blog_constants.baseUrl + '/portal/image/' + item.url"></el-image>
+          <div class="image-selector-list clearfix" style="margin-top: 20px; margin-left: 10px">
+            <el-radio-group class="" v-model="selectedImageIndex">
+              <el-radio-button :label="index" v-for="(item,index) in images" :key="index">
+                <el-image :src="blog_constants.baseUrl + '/portal/image/' + item.url"></el-image>
+              </el-radio-button>
+            </el-radio-group>
+          </div>
+          <div class="image-picker-navigation">
+            <el-pagination
+                style="text-align: right"
+                background
+                @current-change="onPageChange"
+                :current-page="pageNavigation.currentPage"
+                :page-size="pageNavigation.pageSize"
+                layout="total, prev, pager, next, jumper"
+                :total="pageNavigation.totalCount">
+            </el-pagination>
           </div>
         </div>
         <span slot="footer" class="dialog-footer">
@@ -93,115 +120,279 @@
 </template>
 <script>
 import * as api from '@/api/api';
-  export default {
-    data() {
-      let validateSummary = (rule, value, callback) => {
-        if (value === '') {
-          callback(new Error('请输入文章摘要！'));
-        }
-      };
-      let validateCover = (rule, value, callback) => {
-        if (value === '') {
-          callback(new Error('请上传文章封面！'));
-        }
-      };
-      return {
-        images: [],
-        isImageSelectorShow: false,
-        labelNewValue: '',
-        labelInputVisible: false,
-        labels: [],
-        categories: [],
-        article: {
-          title: '',
-          content: '',
-          categoryId: '',
-          summary: '',
-          cover: ''
-        },
-        rules: {
-          summary: [
-            { required: true, validator: validateSummary, trigger: 'blur' }
-          ],
-          cover: [
-            { required: true, validator: validateCover, trigger: 'blur' }
-          ]
-        }
+import editor from '../../../lib/mavon-editor/mavon-editor';
+import '../../../lib/mavon-editor/css/index.css';
+import Vue from 'vue';
+Vue.use(editor);
+export default {
+  data() {
+    let validateSummary = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入文章摘要！'));
       }
+    };
+    let validateCover = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请上传文章封面！'));
+      }
+    };
+    return {
+      loading: false,
+      imageSelectFor: 'article',
+      pageNavigation: {
+        currentPage: 1,     //当前页码
+        totalCount: 0,       //总条数
+        pageSize: 16,    //每页的数量
+      },
+      selectedImageIndex: 0,
+      images: [],
+      isImageSelectorShow: false,
+      labelNewValue: '',
+      labelInputVisible: false,
+      labels: [],
+      categories: [],
+      article: {
+        title: '',
+        content: '',
+        categoryId: '',
+        summary: '',
+        cover: '',
+        labels: '',
+        state: '0', //状态（0表示已发布，1表示草稿，2表示删除，3表示置顶）
+        type: '1' //类型（0表示富文本，1表示markdown）
+      },
+      rules: {
+        summary: [
+          {required: true, validator: validateSummary, trigger: 'blur'}
+        ],
+        cover: [
+          {required: true, validator: validateCover, trigger: 'blur'}
+        ]
+      }
+    }
+  },
+  methods: {
+    preView() {
+      this.$refs.mdEditor.toolbar_right_click('read');
     },
-    methods: {
-      listImages() {
-        api.listImages(1,16).then(result => {
-          if (result.code === api.SUCCESS_CODE) {
-            this.images = result.data.list;
-          }
-        })
-      },
-      onImageSelected() {
-        this.isImageSelectorShow = false;
-      },
-      showImageSelector() {
-        this.isImageSelectorShow = true;
-      },
-      showLabelInput() {
-        if (this.labels.length < 5) {
-          this.labelInputVisible = true;
-          this.$nextTick(() => {
-            this.$refs.saveTagInput.$refs.input.focus();
+    saveArticle() {
+      if (this.article.title === '') {
+        this.$message.error('请输入文章标题！');
+        return;
+      }
+      this.article.state = '1';
+      api.saveArticle(this.article).then(result => {
+        if (result.code === api.SUCCESS_CODE) {
+          this.$message.success(result.message);this.$router.push({
+            path: '/content/manage-article'
           });
         } else {
-          this.labelInputVisible = false;
+          this.$message.error('草稿保存失败！');
         }
-      },
-      handleLabelInputConfirm() {
-        if (this.labels.length < 5) {
-          if (this.labelNewValue) {
-            this.labels.push(this.labelNewValue);
-            if (this.labels.length === 5) {
-              this.$message.error('最多可以添加5个标签');
-            }
-          }
-          this.labelInputVisible = false;
-          this.labelNewValue = '';
+      })
+    },
+    commitArticle() {
+      if (this.article.title === '') {
+        this.$message.error('请输入文章标题！');
+        return;
+      }
+      if (this.article.content === '') {
+        this.$message.error('请输入文章内容！');
+        return;
+      }
+      if (this.article.summary === '') {
+        this.$message.error('请输入文章摘要！');
+        return;
+      }
+      if (this.article.cover === '') {
+        this.$message.error('请上传文章封面！');
+        return;
+      }
+      if (this.article.categoryId === '') {
+        this.$message.error('请选择文章分类！');
+        return;
+      }
+      if (this.labels.length === 0) {
+        this.$message.error('请输入文章标签！');
+        return;
+      }
+      //处理标签
+      let tempLabels ='';
+      console.log(this.labels)
+      this.labels.forEach((item,index) => {
+        console.log(item)
+        tempLabels += item;
+        if (index !== this.labels.length - 1) {
+          tempLabels += '-';
         }
-      },
-      deleteLabel(tag) {
-        //从数组里删除
-        this.labels.splice(this.labels.indexOf(tag), 1);
-      },
-      listCategories() {
-        api.listCategories().then(result => {
-          if (result.code === api.SUCCESS_CODE) {
-            this.categories = result.data;
-          }
-        })
+      });
+      this.article.labels = tempLabels;
+      console.log(this.article.labels);
+      //提交数据
+      this.loading = true;
+      api.postArticle(this.article).then(result => {
+        if (result.code === api.SUCCESS_CODE) {
+          this.$message.success(result.message);
+          this.$router.push({
+            path: '/content/manage-article'
+          });
+        } else {
+          this.$message.error('发表文章失败！');
+        }
+        this.loading =false;
+      })
+    },
+    onEditorImageClick() {
+      this.imageSelectFor = 'article';
+      this.isImageSelectorShow = true;
+    },
+    onPageChange(page) {
+      this.pageNavigation.currentPage = page;
+      this.listImages();
+    },
+    uploadError() {
+      this.$message.error('图片上传失败！');
+    },
+    uploadSuccess(response) {
+      console.log(response)
+      if (response.code === api.SUCCESS_CODE) {
+        this.$message.success(response.message);
+        this.listImages();
+      } else {
+        this.$message.error(response.message);
       }
     },
-    mounted() {
-      this.listCategories();
-      this.listImages();
+    beforeUpload(file) {
+      let isTrue = false;
+      if (file.type === 'image/jpeg') {
+        isTrue = true;
+      }
+      if (file.type === 'image/png') {
+        isTrue = true;
+      }
+      if (file.type === 'image/gif') {
+        isTrue = true;
+      }
+      const isLt2M = file.size / 1024 / 1024 < 2;
+
+      if (!isTrue) {
+        this.$message.error('上传图片只能是 JPG/PNG/GIF 格式!');
+      }
+      if (!isLt2M) {
+        this.$message.error('上传图片大小不能超过 2MB!');
+      }
+      return isTrue && isLt2M;
+    },
+    listImages() {
+      api.listImages(this.pageNavigation.currentPage, this.pageNavigation.pageSize,'article').then(result => {
+        if (result.code === api.SUCCESS_CODE) {
+          this.images = result.data.list;
+          this.pageNavigation.totalCount = result.data.total;
+          this.pageNavigation.currentPage = result.data.pageNum;
+          this.pageNavigation.pageSize = result.data.pageSize;
+        } else {
+          this.$message.error(result.message);
+        }
+      })
+    },
+    onImageSelected() {
+      //从数组里拿到当前选中的对象
+      let item = this.images[this.selectedImageIndex];
+      if (this.imageSelectFor === 'article') {
+        this.$refs.mdEditor.toolbar_left_addlink('no-link',
+            item.name,
+            this.blog_constants.baseUrl + '/portal/image/' + item.url)
+      } else if(this.imageSelectFor === 'cover') {
+        this.article.cover = item.url;
+      }
+      this.isImageSelectorShow = false;
+    },
+    showImageSelector() {
+      this.imageSelectFor = 'cover';
+      this.isImageSelectorShow = true;
+    },
+    showLabelInput() {
+      if (this.labels.length < 5) {
+        this.labelInputVisible = true;
+        this.$nextTick(() => {
+          this.$refs.saveTagInput.$refs.input.focus();
+        });
+      } else {
+        this.labelInputVisible = false;
+      }
+    },
+    handleLabelInputConfirm() {
+      if (this.labels.length < 5) {
+        if (this.labelNewValue && this.labelNewValue !=='') {
+          this.labels.push(this.labelNewValue);
+          if (this.labels.length === 5) {
+            this.$message.error('最多可以添加5个标签');
+          }
+        }
+        this.labelInputVisible = false;
+        this.labelNewValue = '';
+      }
+    },
+    deleteLabel(tag) {
+      //从数组里删除
+      this.labels.splice(this.labels.indexOf(tag), 1);
+    },
+    listCategories() {
+      api.listCategories().then(result => {
+        if (result.code === api.SUCCESS_CODE) {
+          this.categories = result.data;
+        }
+      })
     }
+  },
+  mounted() {
+    this.listCategories();
+    this.listImages();
   }
+}
 </script>
 <style>
+.image-action-bar .el-upload-dragger {
+  border: none;
+  width: 98px;
+  height: 36px;
+}
+
+.image-selector-list .el-radio-button {
+  margin: 6px;
+}
+
+.image-selector-list .el-radio-button__inner, .el-radio-button:first-child .el-radio-button__inner {
+  padding: 0px;
+  border: none;
+  border-radius: 4px;
+}
+
 .image-selector-list img {
   width: 165px;
   height: 110px;
   float: left;
-  margin: 10px;
+  margin: 3px;
   border: solid 1px #919191;
   border-radius: 4px;
 }
+
 .article-post-dialog-box .el-dialog__header {
   display: none;
 }
+
 .article-post-part .v-note-op {
   position: sticky;
   top: 0;
 }
+
 .article-cover-selector i {
   line-height: 140px;
   font-size: 20px;
+}
+.article-cover-selector img {
+  width: 200px;
+  height: 140px;
 }
 .article-cover-selector {
   cursor: pointer;
@@ -211,12 +402,15 @@ import * as api from '@/api/api';
   text-align: center;
   border-radius: 5px;
 }
+
 .article-post-settings-part {
   margin-bottom: 25px;
 }
+
 .article-post-settings-part .el-textarea__inner {
   width: 19%;
 }
+
 .settings-form {
   padding-left: 30px;
   padding-top: 25px;
@@ -224,12 +418,14 @@ import * as api from '@/api/api';
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
 }
+
 .action-btn-container {
   float: right;
   padding-bottom: 20px;
   padding-top: 20px;
   margin-right: 20px;
 }
+
 .article-post-action-bar {
   margin-top: 20px;
   position: fixed;
@@ -238,16 +434,23 @@ import * as api from '@/api/api';
   background: #ffffff;
   border-top: solid 1px #E4DFDF;
 }
+
 .article-post-part .markdown-body {
   height: 800px;
 }
+
 .article-post-part {
   height: 800px;
+  color: #000000;
+}
+.article-post-box{
+  min-height: 500px;
 }
 
 .el-tag + .el-tag {
   margin-left: 10px;
 }
+
 .button-new-tag {
   margin-left: 10px;
   height: 32px;
@@ -255,6 +458,7 @@ import * as api from '@/api/api';
   padding-top: 0;
   padding-bottom: 0;
 }
+
 .input-new-tag {
   width: 90px;
   margin-left: 10px;
