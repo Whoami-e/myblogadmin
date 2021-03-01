@@ -27,7 +27,7 @@
             </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="文章摘要" prop="summary" required>
+        <el-form-item label="文章摘要" prop="summary">
           <el-input
               type="textarea"
               :rows="3"
@@ -37,7 +37,7 @@
         </el-form-item>
         <el-form-item label="文章封面" required prop="cover">
           <div class="article-cover-selector" @click="showImageSelector">
-            <i class="el-icon-plus" v-if="article.cover===''"></i>
+            <i class="el-icon-plus" v-if="!article.cover"></i>
             <el-image v-else :src="blog_constants.baseUrl + '/portal/image/' +article.cover"></el-image>
           </div>
         </el-form-item>
@@ -68,12 +68,13 @@
       <div class="action-btn-container">
         <el-button plain @click="preView">全屏预览</el-button>
         <el-button plain @click="saveArticle">保存草稿</el-button>
-        <el-button v-if="loading === false" @click="commitArticle" type="primary">发表文章</el-button>
-        <el-button v-else @click="commitArticle" type="primary" disabled>发表文章</el-button>
+        <el-button v-if="loading === false" @click="commitArticle" type="primary">{{commitText}}</el-button>
+        <el-button v-else @click="commitArticle" type="primary" disabled>{{commitText}}</el-button>
       </div>
     </div>
     <div class="article-post-dialog-box">
       <el-dialog
+          class="image-picker-container"
           title="图片选择"
           :visible.sync="isImageSelectorShow"
           width="800px">
@@ -115,6 +116,20 @@
           <el-button type="primary" @click="onImageSelected" size="medium">确 定</el-button>
         </span>
       </el-dialog>
+
+      <el-dialog
+          title="确定要离开吗？"
+          :visible.sync="saveConfirmDialogShow"
+          width="400px"
+          center>
+        <div style="text-align: center">
+          <span>系统可能不会保存填写的稿件信息噢...(´；ω；`)</span>
+        </div>
+        <span slot="footer" class="dialog-footer">
+          <el-button size="medium" @click="saveConfirmDialogShow = false">取 消</el-button>
+          <el-button size="medium" type="primary" @click="toNextPath">确 定</el-button>
+        </span>
+      </el-dialog>
     </div>
   </div>
 </template>
@@ -137,6 +152,11 @@ export default {
       }
     };
     return {
+      nextPath: '',
+      isContentSave: false,
+      saveConfirmDialogShow: false,
+      disableDraftBtn: false,
+      commitText: '发表文章',
       loading: false,
       imageSelectFor: 'article',
       pageNavigation: {
@@ -152,6 +172,7 @@ export default {
       labels: [],
       categories: [],
       article: {
+        id: '',
         title: '',
         content: '',
         categoryId: '',
@@ -159,7 +180,8 @@ export default {
         cover: '',
         labels: '',
         state: '0', //状态（0表示已发布，1表示草稿，2表示删除，3表示置顶）
-        type: '1' //类型（0表示富文本，1表示markdown）
+        type: '1', //类型（0表示富文本，1表示markdown）
+        createTime: null
       },
       rules: {
         summary: [
@@ -172,10 +194,29 @@ export default {
     }
   },
   methods: {
+    toNextPath() {
+      this.saveConfirmDialogShow = false;
+      this.isContentSave = true;
+      this.$router.push({
+        path: this.nextPath
+      })
+    },
+    resetArticle() {
+      this.article.labels = '';
+      this.article.state = '0';
+      this.article.type = '1';
+      this.article.cover = '';
+      this.article.summary = '';
+      this.article.categoryId = '';
+      this.article.content= '';
+      this.article.title = '';
+      this.article.id = '';
+    },
     preView() {
       this.$refs.mdEditor.toolbar_right_click('read');
     },
     saveArticle() {
+
       if (this.article.title === '') {
         this.$message.error('请输入文章标题！');
         return;
@@ -183,11 +224,14 @@ export default {
       this.article.state = '1';
       api.saveArticle(this.article).then(result => {
         if (result.code === api.SUCCESS_CODE) {
-          this.$message.success(result.message);this.$router.push({
+          window.onbeforeunload = null;
+          this.isContentSave = true;
+          this.$message.success(result.message);
+          this.$router.push({
             path: '/content/manage-article'
           });
         } else {
-          this.$message.error('草稿保存失败！');
+          this.$message.error('保存草稿失败！');
         }
       })
     },
@@ -200,16 +244,17 @@ export default {
         this.$message.error('请输入文章内容！');
         return;
       }
+
+      if (this.article.categoryId === '') {
+        this.$message.error('请选择文章分类！');
+        return;
+      }
       if (this.article.summary === '') {
         this.$message.error('请输入文章摘要！');
         return;
       }
       if (this.article.cover === '') {
         this.$message.error('请上传文章封面！');
-        return;
-      }
-      if (this.article.categoryId === '') {
-        this.$message.error('请选择文章分类！');
         return;
       }
       if (this.labels.length === 0) {
@@ -220,27 +265,48 @@ export default {
       let tempLabels ='';
       console.log(this.labels)
       this.labels.forEach((item,index) => {
-        console.log(item)
         tempLabels += item;
         if (index !== this.labels.length - 1) {
           tempLabels += '-';
         }
       });
       this.article.labels = tempLabels;
-      console.log(this.article.labels);
-      //提交数据
-      this.loading = true;
-      api.postArticle(this.article).then(result => {
-        if (result.code === api.SUCCESS_CODE) {
-          this.$message.success(result.message);
-          this.$router.push({
-            path: '/content/manage-article'
-          });
-        } else {
-          this.$message.error('发表文章失败！');
+      if (this.article.id === '') {
+        this.loading = true;
+        api.postArticle(this.article).then(result => {
+          if (result.code === api.SUCCESS_CODE) {
+            window.onbeforeunload = null;
+            this.isContentSave = true;
+            this.$message.success(result.message);
+            this.$router.push({
+              path: '/content/manage-article'
+            });
+          } else {
+            this.$message.error('发表文章失败！');
+          }
+          this.loading =false;
+        })
+        this.resetArticle();
+      } else {
+        this.loading = true;
+        if (this.article.state === '2' || this.article.state === '1') {
+          this.article.state = '0';
         }
+        api.updateArticle(this.article).then(result => {
+          if (result.code === api.SUCCESS_CODE) {
+            window.onbeforeunload = null;
+            this.isContentSave = true;
+            this.$message.success(result.message);
+            this.$router.push({
+              path: '/content/manage-article'
+            });
+          } else {
+            this.$message.error('文章更新失败！');
+          }
+        })
         this.loading =false;
-      })
+      }
+      this.resetArticle();
     },
     onEditorImageClick() {
       this.imageSelectFor = 'article';
@@ -343,15 +409,67 @@ export default {
           this.categories = result.data;
         }
       })
+    },
+    getArticleDetail(articleId) {
+      api.getArticleDetail(articleId).then(result => {
+        if (result.code === api.SUCCESS_CODE) {
+          this.article.title = result.data.title;
+          this.article.content = result.data.content;
+          this.article.summary = result.data.summary;
+          this.article.cover = result.data.cover;
+          this.article.state = result.data.state;
+          this.article.type = result.data.type;
+          this.article.id = result.data.id;
+          this.article.categoryId = result.data.categoryId;
+          this.article.labels = result.data.labels;
+          this.article.createTime = result.data.createTime;
+          this.labels = result.data.labelList;
+
+          if (this.article.state === '1') {
+            this.commitText = '发表文章';
+            this.disableDraftBtn = false;
+          } else {
+            this.commitText = '更新文章';
+            this.disableDraftBtn = true;
+          }
+
+
+          this.$message.success(result.message);
+        } else {
+          this.$message.error(result.message);
+        }
+      })
     }
   },
+  beforeDestroy() {
+    window.onbeforeunload = null;
+  },
   mounted() {
+    window.onbeforeunload = function () {
+      return '系统可能不会保存填写的稿件信息噢！';
+    }
+    let articleId = this.$route.query.articleId;
+    if (articleId) {
+      console.log(articleId)
+      this.getArticleDetail(articleId);
+    }
     this.listCategories();
     this.listImages();
+  },
+  beforeRouteLeave(to, from, next) {
+    if (this.isContentSave) {
+      next();
+    } else {
+      this.nextPath = to.path;
+      this.saveConfirmDialogShow = true;
+    }
   }
 }
 </script>
 <style>
+.article-cover-selector .el-image__error {
+  padding-top: 50px;
+}
 .image-action-bar .el-upload-dragger {
   border: none;
   width: 98px;
@@ -377,7 +495,7 @@ export default {
   border-radius: 4px;
 }
 
-.article-post-dialog-box .el-dialog__header {
+.image-picker-container .el-dialog__header {
   display: none;
 }
 
@@ -438,10 +556,11 @@ export default {
 .article-post-part .markdown-body {
   height: 800px;
 }
-
+.article-post-part h1 {
+  color: #000000;
+}
 .article-post-part {
   height: 800px;
-  color: #000000;
 }
 .article-post-box{
   min-height: 500px;

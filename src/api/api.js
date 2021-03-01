@@ -146,3 +146,33 @@ export const postArticle = (article) => {
 export const saveArticle = (article) => {
     return http.requestPost('/admin/article', article);
 }
+
+//获取文章列表
+export const listArticles = (pageNum,pageSize,state,keyword,categoryId) => {
+    return http.requestGet('/admin/article/list/' +pageNum+ '/' +pageSize+ '?state=' +state
+    + '&keyword=' +keyword+ '&categoryId=' +categoryId);
+}
+
+//置顶文章
+export const topArticle = (articleId) => {
+    return http.requestPut('/admin/article/top/' + articleId);
+}
+
+//删除文章（改变状态）
+export const deleteArticleByState = (articleId) => {
+    return http.requestDelete('/admin/article/state/' + articleId);
+}
+//彻底删除文章
+export const deleteArticle = (articleId) => {
+    return http.requestDelete('/admin/article/' + articleId);
+}
+
+//获取文章
+export const getArticleDetail = (articleId) => {
+    return http.requestGet('/admin/article/' + articleId);
+}
+
+//更新文章
+export const updateArticle = (article) => {
+    return http.requestPut('/admin/article/' + article.id,article);
+}
