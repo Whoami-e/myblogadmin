@@ -183,6 +183,7 @@ export default {
         type: '1', //类型（0表示富文本，1表示markdown）
         createTime: null
       },
+      hasContentChange: false,
       rules: {
         summary: [
           {required: true, validator: validateSummary, trigger: 'blur'}
@@ -193,8 +194,17 @@ export default {
       }
     }
   },
+  watch: {
+    article:{
+      handler(){
+        this.hasContentChange = true;
+      },
+      deep: true
+    }
+  },
   methods: {
     toNextPath() {
+      this.hasContentChange = true;
       this.saveConfirmDialogShow = false;
       this.isContentSave = true;
       this.$router.push({
@@ -457,7 +467,7 @@ export default {
     this.listImages();
   },
   beforeRouteLeave(to, from, next) {
-    if (this.isContentSave) {
+    if (this.isContentSave || !this.hasContentChange) {
       next();
     } else {
       this.nextPath = to.path;
@@ -545,11 +555,11 @@ export default {
 }
 
 .article-post-action-bar {
-  margin-top: 20px;
-  position: fixed;
-  bottom: 0;
-  width: 1280px;
-  background: #ffffff;
+  /*margin-top: 20px;*/
+  /*position: fixed;*/
+  /*bottom: 0;*/
+  /*width: 1280px;*/
+  background: #ffffff !important;
   border-top: solid 1px #E4DFDF;
 }
 

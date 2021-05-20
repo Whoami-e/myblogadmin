@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="right-content-container">
     <div class="content-header-box" >
       <el-tag type="info" effect="dark" v-text="$route.name" style="font-size: 15px;">
       </el-tag>
@@ -16,6 +16,9 @@
   }
 </script>
 <style>
+.right-content-container{
+  min-width: 1140px;
+}
  .content-container-box {
    /*padding: 10px;*/
  }

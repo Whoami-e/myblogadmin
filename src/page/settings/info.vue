@@ -2,7 +2,7 @@
   <div class="setting-user-info-box">
     <div class="user-info-list-part">
       <el-form status-icon label-width="100px" v-if="userInfo !== null" class="demo-ruleForm">
-        <el-form-item label="ID">
+        <el-form-item label="ID" style="margin-top: 10px">
           <el-input type="text" v-model="userInfo.id" disabled></el-input>
         </el-form-item>
         <el-form-item label="用户头像" class="user-info-avatar">
@@ -53,6 +53,7 @@ export default {
   },
   data() {
     return {
+      edit: true,
       lastUserName: '',
       showAvatar: false,
       userInfo: null

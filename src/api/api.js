@@ -2,6 +2,7 @@ import http from './http'
 
 export const SUCCESS_CODE =20000;
 export const FAILED_CODE =40000;
+export const websocket = 'ws://192.168.26.192:8080/log'
 
 //解析token
 export const checkToken = () => {
@@ -21,6 +22,11 @@ export const listCategories = () => {
 //删除分类
 export const deleteCategoryById = (categoryId) => {
     return http.requestDelete('/admin/category/' +categoryId);
+}
+
+//恢复分类
+export const restoreCategoryById = (categoryId) => {
+    return http.requestPut('/admin/category/restore/' +categoryId);
 }
 
 //添加分类
@@ -54,18 +60,23 @@ export const updateLoop = (loopId,loop) => {
 }
 
 //获取用户列表
-export const listUsers = (pageNum,pageSize) => {
-    return http.requestGet('/user/list?page=' + pageNum + '&size=' + pageSize);
+export const listUsers = (pageNum,pageSize,userName,email) => {
+    return http.requestGet('/user/list?page=' + pageNum + '&size=' + pageSize+'&userName=' +userName+ '&email=' +email);
 }
 
 //条件搜索用户
 export const doUserSearch = (userName,email) => {
-    return http.requestGet('/user/list?page=1&size=5&userName=' +userName+ '&email=' +email);
+    return http.requestGet('/user/list?page=1&size=10&userName=' +userName+ '&email=' +email);
 }
 
 //删除用户
 export const deleteUserById = (userId) => {
     return http.requestDelete('/user/' +userId);
+}
+
+//恢复用户
+export const restoreUser = (userId) => {
+    return http.requestPut('/user/' +userId);
 }
 
 //重置密码（管理员）
@@ -103,6 +114,11 @@ export const getWebSizeTitle = () => {
     return http.requestGet('/admin/web_size_info/title');
 }
 
+//获取网站浏览量
+export const getViewCount = () => {
+    return http.requestGet('/admin/web_size_info/view_count');
+}
+
 //更新网站标题
 export const updateWebSizeTitle = (title) => {
     return http.requestPut('/admin/web_size_info/title?title=' + title);
@@ -136,6 +152,10 @@ export const deleteFriendLink = (friendLinkId) => {
 //获取图片列表
 export const listImages = (page,size,from) => {
     return http.requestGet('/admin/image/list/' +page+ '/' +size+ '?original=' +from);
+}
+//获取图片列表,用于管理图片
+export const listImagesManagement = (page,size,from) => {
+    return http.requestGet('/admin/image/list-all/' +page+ '/' +size+ '?original=' +from);
 }
 
 //发表文章
@@ -175,4 +195,55 @@ export const getArticleDetail = (articleId) => {
 //更新文章
 export const updateArticle = (article) => {
     return http.requestPut('/admin/article/' + article.id,article);
+}
+
+//获取评论列表
+export const listComments = (pageNum,pageSize) => {
+    return http.requestGet('/admin/comment/list/'+pageNum+'/'+pageSize);
+}
+
+//删除评论
+export const deleteComment = (commentId) => {
+    return http.requestDelete('/admin/comment/' + commentId);
+}
+
+//置顶评论
+export const topComment = (commentId) => {
+    return http.requestPut('/admin/comment/top/' + commentId);
+}
+
+//禁用图片
+export const deleteImage = (imageId) => {
+    return http.requestDelete('/admin/image/' +imageId);
+}
+//恢复图片正常
+export const getRightImage = (imageId) => {
+    return http.requestPut('/admin/image/' +imageId);
+}
+
+//添加速记
+export const addNote = (notes) => {
+    return http.requestPost('/admin/article/note',notes);
+}
+
+//获取速记列表
+export const listNote = () => {
+    return http.requestGet('/admin/article/note/list');
+}
+
+//删除速记
+export const deleteNote = (noteId) => {
+    return http.requestDelete('/admin/article/note/list/' + noteId);
+}
+
+export const doLogOut = () => {
+    return http.requestGet('/user/logout');
+}
+
+export const checkAdmin = () =>{
+    return http.requestGet('/user/check_admin')
+}
+
+export const initAdmin = (admin) =>{
+    return http.requestPost('/user/admin_account',admin)
 }

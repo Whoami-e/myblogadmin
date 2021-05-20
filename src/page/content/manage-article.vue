@@ -80,8 +80,8 @@
           <template slot-scope="scope">
             <el-button type="primary" size="mini" @click="edit(scope.row)" icon="el-icon-edit"></el-button>
             <el-button type="danger" size="mini" @click="deleteItem(scope.row)" icon="el-icon-delete"></el-button>
-            <el-button type="info" v-if="scope.row.state==='0'" size="mini" @click="top(scope.row)" icon="el-icon-caret-top"></el-button>
-            <el-button type="info" v-if="scope.row.state==='3'" size="mini" @click="top(scope.row)" icon="el-icon-caret-bottom"></el-button>
+            <el-button type="info" v-if="scope.row.state==='0'" size="mini" @click="top(scope.row)" icon="el-icon-top"></el-button>
+            <el-button type="info" v-if="scope.row.state==='3'" size="mini" @click="top(scope.row)" icon="el-icon-bottom"></el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -231,6 +231,7 @@
         api.listArticles(this.pageNavigation.currentPage,this.pageNavigation.pageSize,this.search.state,this.search.keyword,this.search.categoryId).then(result => {
           if (result.code === api.SUCCESS_CODE) {
             this.articles = result.data.list;
+            console.log(result.code)
             this.pageNavigation.totalCount = result.data.total;
             this.pageNavigation.currentPage = result.data.pageNum;
             this.pageNavigation.pageSize = result.data.pageSize;

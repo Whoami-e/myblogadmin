@@ -103,17 +103,20 @@
               </el-switch>
             </el-form-item>
             <el-form-item label="LOGO">
-              <el-upload
-                  drag
-                  class="avatar-uploader"
-                  action="/admin/image/friendlink"
-                  :show-file-list="false"
-                  :on-success="uploadSuccess"
-                  :before-upload="beforeUpload">
-                <el-image fit="cover" v-if="link.logo!==''" :src="blog_constants.baseUrl + link.logo"
-                          class="avatar"></el-image>
-                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-              </el-upload>
+              <div class="friend-link-image-upload" @click="showLinkLogoDialog">
+
+<!--                <el-upload-->
+<!--                    drag-->
+<!--                    class="avatar-uploader"-->
+<!--                    action="/admin/image/friendlink"-->
+<!--                    :show-file-list="false"-->
+<!--                    :on-success="uploadSuccess"-->
+<!--                    :before-upload="beforeUpload">-->
+                  <el-image fit="cover" v-if="link.logo!==''" :src="blog_constants.baseUrl + link.logo"
+                            class="avatar"></el-image>
+                  <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+<!--                </el-upload>-->
+              </div>
             </el-form-item>
           </el-form>
         </div>
@@ -122,6 +125,15 @@
           <el-button type="primary" @click="handleLoopEditCommit">确 定</el-button>
         </span>
       </el-dialog>
+      <avatar-upload
+          field="file"
+          @crop-upload-success="cropUploadSuccess"
+          @crop-upload-fail="cropUploadFail"
+          v-model="showLinkLogoCutter"
+          :width="200"
+          :height="74"
+          url="/admin/image/friendlink"
+          img-format="png"></avatar-upload>
       <el-dialog
           :close-on-press-escape="false"
           :close-on-click-modal="false"
@@ -140,7 +152,11 @@
 <script>
 import * as api from '@/api/api';
 import * as dateUtils from "@/utils/date";
+import avatarUpload from 'vue-image-crop-upload/upload-2.vue';
   export default {
+    components: {
+      'avatar-upload': avatarUpload
+    },
     data() {
       let validateName = (rule, value, callback) => {
         if (value === '') {
@@ -153,6 +169,7 @@ import * as dateUtils from "@/utils/date";
         }
       };
       return {
+        showLinkLogoCutter: false,
         links: [],
         loading: false,
         linkEditTitle: '添加友情链接',
@@ -179,6 +196,10 @@ import * as dateUtils from "@/utils/date";
       }
     },
     methods:{
+      //显示logo裁剪窗口
+      showLinkLogoDialog(){
+        this.showLinkLogoCutter = true;
+      },
       handleLoopEditCommit() {
         if (this.link.name === '') {
           this.$message.error('请输入网站名称！');
@@ -281,13 +302,17 @@ import * as dateUtils from "@/utils/date";
         let date = new Date(dateStr);
         return dateUtils.formatDate(date, 'yyyy-MM-dd hh:mm:ss');
       },
-      uploadSuccess(response) {
+      cropUploadSuccess(response) {
+        console.log(response.data.path)
         if (response.code === api.SUCCESS_CODE) {
           this.link.logo = '/portal/image/' + response.data.path;
           this.$message.success(response.message);
         } else {
           this.$message.error(response.message);
         }
+      },
+      cropUploadFail(){
+        this.$message.error('Logo上传失败！');
       },
       beforeUpload(file) {
         let isTrue = false;
@@ -317,6 +342,13 @@ import * as dateUtils from "@/utils/date";
   }
 </script>
 <style>
+.friend-link-image-upload{
+  width: 100px;
+  height: 37px;
+  border: #dfdfdf dashed 1px;
+  text-align: center;
+  cursor: pointer;
+}
 .input .el-input__inner {
   width: 65%;
 }

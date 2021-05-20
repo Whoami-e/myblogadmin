@@ -52,19 +52,19 @@
           <template slot-scope="scope">
             <el-button type="primary" size="mini" @click="edit(scope.row)" icon="el-icon-edit"></el-button>
             <el-button type="danger" v-if="scope.row.status!=='0'" size="mini" @click="deleteCategory(scope.row)"
-                       icon="el-icon-delete"></el-button>
-            <el-button type="danger" v-if="scope.row.status==='0'" size="mini" @click="deleteCategory(scope.row)"
-                       icon="el-icon-delete" disabled></el-button>
+                       icon="el-icon-close"></el-button>
+            <el-button type="success" v-if="scope.row.status==='0'" size="mini" @click="restoreCategory(scope.row)"
+                       icon="el-icon-check"></el-button>
           </template>
         </el-table-column>
       </el-table>
     </div>
     <div class="category-dialog-box">
       <el-dialog
-          title="删除提示"
+          title="提示"
           :visible.sync="deleteDialogShow"
           width="400px">
-        <span>确定要删除: <font style="color: red">{{ deleteMessage }}</font>  这个分类么?</span>
+        <span>{{deleteMessage2}} <font style="color: red">{{ deleteMessage }}</font>  这个分类么?</span>
         <span slot="footer" class="dialog-footer">
           <el-button size="mini" type="danger" @click="deleteDialogShow = false">取 消</el-button>
           <el-button size="mini" type="primary" @click="deleteItem()">确 定</el-button>
@@ -86,7 +86,7 @@
             <el-form-item label="分类描述" prop="description">
               <el-input type="textarea" :row="2" resize="none" maxlength="80" placeholder="最多80个字符" v-model="category.description"></el-input>
             </el-form-item>
-            <el-form-item label="分类拼音" prop="pinyin">
+            <el-form-item label="分类英语" prop="pinyin">
               <el-input v-model="category.pinyin"></el-input>
             </el-form-item>
             <el-form-item label="顺序">
@@ -133,7 +133,7 @@ export default {
     };
     let validatePinyin = (rule, value, callback) => {
       if (value === '') {
-        callback(new Error('请输入分类拼音'));
+        callback(new Error('请输入分类英语'));
       }
     };
     return {
@@ -142,6 +142,8 @@ export default {
       deleteDialogShow: false,
       editDialogShow: false,
       deleteMessage: '',
+      deleteMessage2: '',
+      status: '',
       deleteTargetID: '',
       editTitle: '编辑分类',
       category: {
@@ -183,26 +185,49 @@ export default {
       this.editDialogShow = true;
       this.editTitle = '编辑分类';
     },
+    restoreCategory(item){
+      this.deleteDialogShow = true;
+      this.deleteMessage = item.name;
+      this.deleteMessage2 = '确定要恢复:';
+      this.deleteTargetID = item.id;
+      this.status = item.status;
+    },
     deleteCategory(item) {
       this.deleteDialogShow = true;
       this.deleteMessage = item.name;
+      this.deleteMessage2 = '确定要删除:';
       this.deleteTargetID = item.id;
+      this.status = item.status;
     },
     formatDate(dateStr) {
       let date = new Date(dateStr);
       return dateUtils.formatDate(date, 'yyyy-MM-dd hh:mm:ss');
     },
     deleteItem() {
-      api.deleteCategoryById(this.deleteTargetID).then(result => {
-        if (result.code === api.SUCCESS_CODE) {
-          this.$message({
-            message: result.message,
-            center: true,
-            type: 'success'
-          });
-          this.listCategories();
-        }
-      })
+      if (this.status === '1') {
+        api.deleteCategoryById(this.deleteTargetID).then(result => {
+          if (result.code === api.SUCCESS_CODE) {
+            this.$message({
+              message: result.message,
+              center: true,
+              type: 'success'
+            });
+            this.listCategories();
+          }
+        })
+      } else if (this.status === '0'){
+        api.restoreCategoryById(this.deleteTargetID).then(result => {
+          if (result.code === api.SUCCESS_CODE) {
+            this.$message({
+              message: result.message,
+              center: true,
+              type: 'success'
+            });
+            this.listCategories();
+          }
+        })
+      }
+
       this.deleteDialogShow = false;
     },
     listCategories() {
@@ -228,7 +253,7 @@ export default {
         return;
       }
       if (this.category.pinyin === '') {
-        this.toastE('请输入分类拼音');
+        this.toastE('请输入分类英文');
         return;
       }
       if (this.category.id === '') {

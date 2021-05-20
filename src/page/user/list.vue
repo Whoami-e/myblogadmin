@@ -71,9 +71,9 @@
           <template slot-scope="scope">
             <el-button type="primary" size="mini" @click="resetPasswordShow(scope.row)">重置密码</el-button>
             <el-button type="danger" v-if="scope.row.state!=='0'" size="mini" @click="deleteItem(scope.row)"
-                       icon="el-icon-delete"></el-button>
-            <el-button type="danger" v-if="scope.row.state==='0'" size="mini" @click="deleteItem(scope.row)"
-                       icon="el-icon-delete" disabled></el-button>
+                       icon="el-icon-close"></el-button>
+            <el-button type="success" v-if="scope.row.state==='0'" size="mini" @click="restoreItem(scope.row)"
+                       icon="el-icon-check"></el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -95,10 +95,10 @@
       <el-dialog
           :close-on-press-escape="false"
           :close-on-click-modal="false"
-          title="删除提示"
+          title="提示"
           :visible.sync="deleteDialogShow"
           width="400px">
-        <span>确定要删除用户: <font style="color: red">{{ deleteMessage }}</font>  么?</span>
+        <span>{{deleteMessage2}} <font style="color: red">{{ deleteMessage }}</font>  么?</span>
         <span slot="footer" class="dialog-footer">
           <el-button size="mini" type="danger" @click="deleteDialogShow = false">取 消</el-button>
           <el-button size="mini" type="primary" @click="deleteUser()">确 定</el-button>
@@ -173,6 +173,8 @@
         resetPasswordTargetName: '',
         resetPasswordDialogShow: false,
         deleteMessage: '',
+        deleteMessage2: '',
+        state: '',
         TargetID: '',
         search: {
           userName:'',
@@ -188,10 +190,19 @@
       }
     },
     methods: {
+      restoreItem(item){
+        this.deleteDialogShow = true;
+        this.deleteMessage = item.userName;
+        this.deleteMessage2 = '确定要恢复用户:';
+        this.TargetID = item.id;
+        this.state = item.state;
+      },
       deleteItem(item) {
         this.deleteDialogShow = true;
         this.deleteMessage = item.userName;
+        this.deleteMessage2 = '确定要删除用户:';
         this.TargetID = item.id;
+        this.state = item.state;
       },
       resetPasswordShow(item) {
         this.resetPasswordDialogShow = true;
@@ -238,7 +249,8 @@
       },
       listUsers() {
         this.loading = true;
-        api.listUsers(this.pageNavigation.currentPage,this.pageNavigation.pageSize).then(result => {
+        api.listUsers(this.pageNavigation.currentPage,this.pageNavigation.pageSize,
+            this.search.userName,this.search.email).then(result => {
           if (result.code === api.SUCCESS_CODE) {
             this.userList = result.data.list;
             this.pageNavigation.totalCount = result.data.total;
@@ -251,16 +263,34 @@
         });
       },
       deleteUser() {
-        api.deleteUserById(this.deleteTargetID).then(result => {
-          if (result.code === api.SUCCESS_CODE) {
-            this.$message({
-              message: result.message,
-              center: true,
-              type: 'success'
-            });
-            this.listUsers();
-          }
-        })
+        if (this.state === '1') {
+          api.deleteUserById(this.TargetID).then(result => {
+            if (result.code === api.SUCCESS_CODE) {
+              this.$message({
+                message: result.message,
+                center: true,
+                type: 'success'
+              });
+              this.listUsers();
+            } else {
+              this.$message.error(result.message);
+            }
+          })
+        } else if(this.state === '0'){
+          api.restoreUser(this.TargetID).then(result => {
+            if (result.code === api.SUCCESS_CODE) {
+              this.$message({
+                message: result.message,
+                center: true,
+                type: 'success'
+              });
+              this.listUsers();
+            } else {
+              this.$message.error(result.message);
+            }
+          })
+        }
+
         this.deleteDialogShow = false;
       },
       doSearch() {

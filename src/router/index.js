@@ -24,6 +24,8 @@ const  friendLink = () =>import("@/page/settings/friend-link")
 const  webSizeInfo = () =>import("@/page/settings/web-size-info")
 const  email = () =>import("@/page/settings/email")
 const  info = () =>import("@/page/settings/info")
+const  utils = () =>import("@/page/settings/utils")
+const  development = () =>import("@/page/settings/development")
 
 /*用户*/
 const  list = () =>import("@/page/user/list")
@@ -137,6 +139,13 @@ export const routes = [
                         component: email
                     },
                     {
+                        path: 'utils',
+                        name: '小工具',
+                        icon: 'el-icon-s-tools',
+                        hidden: false,
+                        component: utils
+                    },
+                    {
                         path: 'info',
                         name: '用户信息',
                         icon: 'el-icon-info',
@@ -156,6 +165,13 @@ export const routes = [
                         icon: 'el-icon-link',
                         hidden: false,
                         component: friendLink
+                    },
+                    {
+                        path: 'development',
+                        name: '开发者模式',
+                        icon: 'el-icon-set-up',
+                        hidden: true,
+                        component: development
                     }
                 ]
             }

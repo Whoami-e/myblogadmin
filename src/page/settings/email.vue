@@ -136,6 +136,9 @@ import * as api from '@/api/api';
     width: 20%;
     margin-right: 10px;
   }
+  .setting-email-box .el-form-item {
+    margin-bottom: 10px;
+  }
   .setting-email-box {
     margin-top: 20px;
     padding-left: 100px;

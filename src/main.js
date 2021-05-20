@@ -23,7 +23,9 @@ router.beforeEach((to, from, next) => {
     next();
   } else {
     checkToken().then(result => {
+      // console.log(result)
       if (result.code === 20000) {
+        window.localStorage.setItem('avatar',result.data.avatar);
         //登录成功，判断角色
         if (result.data.roles === 'admin') {
           next();
